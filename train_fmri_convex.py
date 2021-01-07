@@ -174,7 +174,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=4, type=int, help='Batch size')
 
     parser.add_argument("--no_sample", default=False, help='Whether to use a normal gaussian layer rather than a sampled one', action='store_true')
-    parser.add_argument("--no_wandb", default=False, help='Skip using W&B', action='store_true')
+    parser.add_argument("--no_wandb", default=True, help='Skip using W&B', action='store_true')
     
     parser.add_argument("--dataset", default='vim2', help='Dataset (currently only vim2)')
     parser.add_argument("--subject", default='s1', help='Dataset (for vim2: s1, s2 or s3)')
@@ -182,6 +182,7 @@ if __name__ == "__main__":
     parser.add_argument("--cache_root", default='./cache', help='Precomputed cache path')
     parser.add_argument("--slowfast_root", default='', help='Path where SlowFast is installed')
     parser.add_argument("--ckpt_root", default='./pretrained', help='Path where trained model checkpoints will be downloaded')
+    parser.add_argument("--simmousenet_path", default='./', help='Path to the pretrained SimMouseNet')
     
     args = parser.parse_args()
     main(args)

@@ -5,9 +5,9 @@ import os
 import tables
 from tqdm import tqdm
 
-from modelzoo import gabor_pyramid, separable_net
+from modelzoo import gabor_pyramid, separable_net, SimMouseNet
 from loaders import vim2
-from modelzoo.slowfast_wrapper import SlowFast
+# from modelzoo.slowfast_wrapper import SlowFast
 
 import torch
 from torch import nn
@@ -94,6 +94,13 @@ def preprocess_data(loader,
                     result = model(X)
                     
                     for layer in activations.keys():
+                        # if 4 dim
+                        if len(activations[layer].shape) == 4:
+                            BSL, C, W, H = activations[layer].shape
+                            activations[layer] = activations[layer].view(BSL//X.shape[2],X.shape[2],C,W,H).permute((0,2,1,3,4))
+                        else:
+                            activations[layer] = activations[layer].permute((0,2,1,3,4))
+                        
                         fit_layer = aggregator(activations[layer]).cpu().detach().numpy()
                         
                         if outputs is None:
@@ -107,6 +114,7 @@ def preprocess_data(loader,
                                                                     X.shape[4]))
                     
                     for layer in activations.keys():
+                        
                         fit_layer = activations[layer]
                         fit_layer = fit_layer.reshape(X.shape[0], X.shape[2], *fit_layer.shape[1:])
                         fit_layer = fit_layer.permute(0, 2, 1, 3, 4).cpu().detach().numpy()
@@ -308,6 +316,45 @@ def get_feature_model(args):
 
         metadata = {'sz': 112,
                     'threed': True}
+    elif args.features == 'simmousenet':
+        
+        model = SimMouseNet.SimMouseNet()
+        
+        checkpoint = torch.load(args.simmousenet_path,map_location=torch.device('cpu'))
+        allkeys = list(checkpoint['state_dict'])
+
+        pretrained_dict = {}
+        for k, v in checkpoint['state_dict'].items():
+            if 'backbone' in k:
+                newkey = k[16:] # revise this
+                pretrained_dict[newkey] = v
+        
+        model_dict = model.state_dict()
+
+        model_dict.update(pretrained_dict)
+        model.load_state_dict(model_dict)
+        
+        layers = (
+            model.Areas.Retina,
+            model.Areas.LGN,
+            model.Areas.VISp.L4,
+            model.Areas.VISp.L5,
+            model.Areas.VISl.L4,
+            model.Areas.VISl.L5,
+            model.Areas.VISal.L4,
+            model.Areas.VISal.L5,
+            model.Areas.VISpm.L4,
+            model.Areas.VISpm.L5,
+            model.Areas.VISam.L4,
+            model.Areas.VISam.L5
+            )
+        
+        for i, layer in enumerate(layers):
+            layer.register_forward_hook(hook(i))
+        
+        metadata = {'sz': 112,
+                    'threed': True}
+        
     else:
         raise NotImplementedError('Model not implemented yet')
 
