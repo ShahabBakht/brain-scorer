@@ -95,11 +95,12 @@ def preprocess_data(loader,
                     
                     for layer in activations.keys():
                         # if 4 dim
-                        if len(activations[layer].shape) == 4:
-                            BSL, C, W, H = activations[layer].shape
-                            activations[layer] = activations[layer].view(BSL//X.shape[2],X.shape[2],C,W,H).permute((0,2,1,3,4))
-                        else:
-                            activations[layer] = activations[layer].permute((0,2,1,3,4))
+                        if args.features == 'simmousenet':
+                            if len(activations[layer].shape) == 4:
+                                BSL, C, W, H = activations[layer].shape
+                                activations[layer] = activations[layer].view(BSL//X.shape[2],X.shape[2],C,W,H).permute((0,2,1,3,4))
+                            else:
+                                activations[layer] = activations[layer].permute((0,2,1,3,4))
                         
                         fit_layer = aggregator(activations[layer]).cpu().detach().numpy()
                         
@@ -352,7 +353,7 @@ def get_feature_model(args):
         for i, layer in enumerate(layers):
             layer.register_forward_hook(hook(i))
         
-        metadata = {'sz': 112,
+        metadata = {'sz': 64,
                     'threed': True}
         
     else:

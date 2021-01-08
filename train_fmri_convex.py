@@ -174,7 +174,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=4, type=int, help='Batch size')
 
     parser.add_argument("--no_sample", default=False, help='Whether to use a normal gaussian layer rather than a sampled one', action='store_true')
-    parser.add_argument("--no_wandb", default=True, help='Skip using W&B', action='store_true')
+    parser.add_argument("--no_wandb", default=False, help='Skip using W&B', action='store_true')
     
     parser.add_argument("--dataset", default='vim2', help='Dataset (currently only vim2)')
     parser.add_argument("--subject", default='s1', help='Dataset (for vim2: s1, s2 or s3)')
