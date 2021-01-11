@@ -136,6 +136,7 @@ wandb
 models/
 runs/
 data/
+data_derived/
 pretrained/
 
 model.pt
@@ -145,3 +146,7 @@ cloud-run.bat
 # Data files
 *.h5
 *.pkl
+
+notebooks/results
+wandb-metadata.json
+motion-net.filter.html
