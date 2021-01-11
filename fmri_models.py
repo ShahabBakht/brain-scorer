@@ -507,9 +507,6 @@ def get_feature_model(args):
             model.Areas.VISam.L5
             )
         
-        for i, layer in enumerate(layers):
-            layer.register_forward_hook(hook(i))
-        
         metadata = {'sz': 64,
                     'threed': True}
         
