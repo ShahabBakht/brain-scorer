@@ -10,11 +10,10 @@ from tqdm import tqdm
 
 from modelzoo import gabor_pyramid, separable_net, SimMouseNet
 from loaders import vim2
-# from modelzoo.slowfast_wrapper import SlowFast
 from loaders import vim2, pvc4, mt2
 from modelzoo import gabor_pyramid, separable_net
 from modelzoo.motionnet import MotionNet
-from modelzoo.slowfast_wrapper import SlowFast
+# from modelzoo.slowfast_wrapper import SlowFast
 from modelzoo.shiftnet import ShiftNet
 from modelzoo.monkeynet import ShallowNet, V1Net
 
