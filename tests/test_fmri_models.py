@@ -12,7 +12,9 @@ from fmri_models import (get_dataset,
                          preprocess_data, 
                          get_feature_model,
                          get_aggregator,
-                         Averager)
+                         Averager,
+                         Downsampler,
+                         RP)
 
 import torch
 
@@ -25,9 +27,46 @@ class TestFmriModels(unittest.TestCase):
             self.assertEqual(X_.shape[1], 24)
             self.assertEqual(X_.ndim, 2)
 
+    def test_downsampling(self):
+        ds = Downsampler(8)
+
+        sz = 10
+        X = torch.zeros(1, 6, sz, 55, 55)
+        X[:, :, :, :7, :7] = 1
+        X_ = ds(X)
+        self.assertGreater(X_[0, 0], 0.9)
+        self.assertLess(X_[0, 2], 0.2)
+        for sz in [10, 20, 40, 80]:
+            X = torch.randn(1, 6, sz, 8*7, 8*7)
+            X_ = ds(X)
+            self.assertEqual(X_.shape[1], 24*8*8)
+            self.assertEqual(X_.ndim, 2)
+
+    def test_rp(self):
+        rp = RP(100)
+        for sz in [10, 20, 40, 80]:
+            X = torch.randn(1, 6, sz, 20, 20)
+            X_ = rp(X)
+            self.assertEqual(X_.shape[1], 100)
+            self.assertEqual(X_.ndim, 2)
+
+        # Now check a different size
+        X = torch.randn(1, 128, 80, 20, 20)
+        X_ = rp(X)
+        self.assertEqual(X_.shape[1], 100)
+
+    def test_rp_cuda(self):
+        rp = RP(100)
+
+        # Now check a different size
+        X = torch.randn(1, 128, 80, 20, 20, device='cuda')
+        X_ = rp(X)
+        self.assertEqual(X_.shape[1], 100)
+
+    @unittest.skip("Slow")
     def test_caching(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
-            args = wrap({'subject': 's1',
+            args = wrap({'subset': 's1',
                         'batch_size': 10,
                         'features': 'gaborpyramid3d',
                         'aggregator': 'average',
@@ -78,9 +117,10 @@ class TestFmriModels(unittest.TestCase):
             # Should be at least five times faster
             self.assertGreater(dt, dt2 * 5)
 
+    @unittest.skip("Slow")
     def test_caching_2d(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
-            args = wrap({'subject': 's1',
+            args = wrap({'subset': 's1',
                         'batch_size': 10,
                         'features': 'resnet18',
                         'aggregator': 'average',

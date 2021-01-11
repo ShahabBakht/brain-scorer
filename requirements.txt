@@ -1,11 +1,10 @@
-av
-gluoncv
+GitPython
 matplotlib
 pandas
 python-dict-wrapper
 scipy
+seaborn
+sklearn
 tables
-tensorboard
 tqdm
 wandb
-git+https://github.com/facebookresearch/detectron2.git

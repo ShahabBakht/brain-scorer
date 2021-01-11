@@ -76,11 +76,13 @@ class Vim2(torch.utils.data.Dataset):
         else:
             seq_end = 7200
 
+        nblocks = 10
+
         for i in range(0, seq_end, self.nt):
             which_bucket = i // block_len
             if (split == 'traintune' or
-                (split == 'train' and (which_bucket % 10) != 4) or 
-                (split == 'tune' and (which_bucket % 10) == 4) or
+                (split == 'train' and (which_bucket % nblocks) != 4) or 
+                (split == 'tune' and (which_bucket % nblocks) == 4) or
                 (split == 'report')):
                 sequences.append(
                     {'subject': self.subject, 
@@ -104,6 +106,7 @@ class Vim2(torch.utils.data.Dataset):
         self.mask = self._get_master_mask(mask_type)
 
         self.total_electrodes = self.mask.sum()
+        self.max_r2 = self._get_max_r2s()
 
         assert self.total_electrodes > 0
 
@@ -207,3 +210,12 @@ class Vim2(torch.utils.data.Dataset):
 
         return rois
 
+    def _get_max_r2s(self):
+        f = tables.open_file(
+            os.path.join(self.root, 
+            f'VoxelResponses_subject{self.subject[1]}.mat'))
+
+        max_r2 = f.get_node('/maxr2')[:]
+        f.close()
+
+        return max_r2
